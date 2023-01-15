@@ -1,0 +1,93 @@
+---
+title: "Answer to Q2"
+output:
+  html_document: default
+---
+### Answer to Q2(1)
+
+The rate of change of the concentration of each species can be described using the law of mass action. The four equations for the rate of change of the four species, $E$, $S$, $ES$, and $P$, are as follows:
+
+$$ \cfrac{d[E]}{dt} = -k_{1}[E][S] + k_{2}[ES] + k_{3}[ES]\\\\
+\cfrac{d[S]}{dt} = -k_{1}[E][S] + k_{2}[ES]\\\\
+\cfrac{d[ES]}{dt} = k_{1}[E][S] - k_{2}[ES] - k_{3}[ES]\\\\
+\cfrac{d[P]}{dt} = k_{3}[ES]$$
+
+where $[E]$, $[S]$, $[ES]$, and $[P]$ represent the concentrations of the enzymes $E$, substrate $S$, intermediate species $ES$, and product $P$, respectively. $\cfrac{d[E]}{dt}$, $\cfrac{d[S]}{dt}$, $\cfrac{d[ES]}{dt}$, $\cfrac{d[P]}{dt}$ represent the rate of change of concentration of each species and $k_{1}$, $k_{2}$, $k_{3}$ are the forward rate, reverse rate and breakdown rate of the intermediate species into product, respectively.
+
+
+### Answer to Q2(2)
+```{r }
+k1 <- 100 
+k2 <- 600 
+k3 <- 150 
+dt <- 0.001 
+num_step <- 1000
+E <- c()
+S <- c()
+ES <- c()
+P <- c()
+E[1] <- 1 
+S[1] <- 10 
+ES[1] <- 0
+P[1] <- 0
+
+deriv <- function(E, S, ES, P) { # calculate the derivatives
+  dEdt <- -k1*E*S + k2*ES + k3*ES
+  dSdt <- -k1*E*S + k2*ES
+  dESdt <- k1*E*S - k2*ES - k3*ES
+  dPdt <- k3*ES
+  return(c(dEdt, dSdt, dESdt, dPdt))
+}
+
+# fourth-order Runge-Kutta method
+for (i in 2:num_step) {
+  E1 <- E[i-1]
+  S1 <- S[i-1]
+  ES1 <- ES[i-1]
+  P1 <- P[i-1]
+  h1 <- deriv(E1, S1, ES1, P1)
+  E2 <- E1 + 0.5*dt*h1[1]
+  S2 <- S1 + 0.5*dt*h1[2]
+  ES2 <- ES1 + 0.5*dt*h1[3]
+  P2 <- P1 + 0.5*dt*h1[4]
+  h2 <- deriv(E2, S2, ES2, P2)
+  E3 <- E1 + 0.5*dt*h2[1]
+  S3 <- S1 + 0.5*dt*h2[2]
+  ES3 <- ES1 + 0.5*dt*h2[3]
+  P3 <- P1 + 0.5*dt*h2[4]
+  h3 <- deriv(E3, S3, ES3, P3)
+  E4 <- E1 + dt*h3[1]
+  S4 <- S1 + dt*h3[2]
+  ES4 <- ES1 + dt*h3[3]
+  P4 <- P1 + dt*h3[4]
+  h4 <- deriv(E4, S4, ES4, P4)
+  E[i] <- E1 + (h1[1]+2*h2[1]+2*h3[1]+h4[1])*dt/6
+  S[i] <- S1 + (h1[2]+2*h2[2]+2*h3[2]+h4[2])*dt/6
+  ES[i] <- ES1 + (h1[3]+2*h2[3]+2*h3[3]+h4[3])*dt/6
+  P[i] <- P1 + (h1[4]+2*h2[4]+2*h3[4]+h4[4])*dt/6
+}
+Final_E<-E[num_step]
+Final_S<-S[num_step]
+Final_ES<-ES[num_step]
+Final_P<-P[num_step]
+Final_E
+Final_S
+Final_ES
+Final_P
+```
+
+
+### Answer to Q2(3)
+When the system enters the steady state, we will have $\cfrac{d[S]}{dt} = -k_{1}[E][S] + k_{2}[ES] = 0$ and then it becomes $k_{1}[E][S] = k_{2}[ES]$. By referring to Michaelis–Menten kinetics (Johnson and Goody, 2011), we set $[E]_{0} = [E] + [ES]$ as the initial enzyme concentration and then $k_{1}[E][S] = k_{1}([E]_{0} - [ES])[S] = k_{2}[ES]$. Finally, we will have the following equation:
+$$V = \cfrac{d[P]}{dt} = k_{3}[ES] = k_{3}[E]_{0}\cfrac{k_{1}[S]}{k_{2} + k_{1}[S]} = V_{max}\cfrac{[S]}{K_{d} + [S]}$$
+where $V_{max} = k_{3}[E]_{0}$ and $K_{d} = \cfrac{k_{2}}{k_{1}}$. The plot of V is shown below:
+```{r pressure, echo=FALSE}
+curve(150*x/(6+x),0,100, xlab="[S]", ylab="V")
+```
+
+When $[S]$ is small, the equation of $V$ will become $$V = k_{3}[E_{0}]\cfrac{[S]}{K_{d}}$$ and the velocity $V$ increases approximately linearly. When $[S]$ is large, the reaction becomes independent of $[S]$ and asymptotically approaches its maximum rate $V_{m}$. From the plot, $V_{m} = V_{max} = k_{3}[E]_{0} = k_{3}[E]$ because a large $[S]$ means that $[ES]$ is close to 0, which also means that $[E]_{0} = [E]$.
+<br/>
+<br/>
+
+### Reference
+Johnson, K. A.and Goody, R. S. (2011). The original Michaelis constant: translation of the 1913 Michaelis–Menten paper. *Biochemistry*, 50(39), 8264-8269.
